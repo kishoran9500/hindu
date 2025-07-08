@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🎓 Hindu Primary School - Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #e0f7fa, #f1f8e9);
+      position: relative;
+      /* Changed from overflow: hidden; to allow scrolling */
+      overflow-y: auto; 
+      overflow-x: hidden; /* Prevent horizontal scroll */
+    }
+
+    #backgroundCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      left: -50px;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 15% 15%, rgba(255, 255, 150, 0.4) 0%, transparent 40%),
+                  radial-gradient(circle at 85% 25%, rgba(255, 255, 180, 0.3) 0%, transparent 35%);
+      pointer-events: none;
+      animation: sunlightShine 10s infinite alternate;
+      z-index: -1;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 10% 40%, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+        radial-gradient(circle at 90% 60%, rgba(255, 255, 255, 0.09) 2px, transparent 2px);
+      background-size: 50px 50px, 60px 60px, 40px 40px, 70px 70px, 55px 55px;
+      pointer-events: none;
+      z-index: -1;
+      animation: powderSparkle 15s infinite linear;
+    }
+
+    header {
+      background: linear-gradient(to right, #388e3c, #66bb6a);
+      color: white;
+      padding: 25px;
+      text-align: center;
+      font-size: 1.5em;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      transition: all 0.3s ease-in-out;
+      animation: fadeIn 0.5s ease-in;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card:hover {
+      transform: scale(1.01);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+
+    button {
+      padding: 12px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #388e3c;
+    }
+
+    .class-buttons button {
+      background-color: #1976d2;
+      margin: 10px;
+    }
+
+    .class-buttons button:hover {
+      background-color: #0d47a1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+      font-size: 0.95em;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .nav-buttons {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .nav-buttons button {
+      margin: 8px;
+    }
+
+    #classFilter {
+      width: 200px;
+      margin-bottom: 15px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes sunlightShine {
+      0% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+      50% { transform: scale(1.05) rotate(5deg); opacity: 0.9; }
+      100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+    }
+
+    @keyframes powderSparkle {
+      from { background-position: 0 0; }
+      to { background-position: 100px 100px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="backgroundCanvas"></canvas>
+
+<header>HINDU PRIMARY SCHOOL - SUNDARARAJAPURAM</header>
+
+<div class="card" id="loginPage">
+  <h2>Login</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Sign In</button>
+</div>
+
+<div class="card class-buttons" id="classPage" style="display:none;">
+  <h2>Select Your Class</h2>
+  <button onclick="openForm('Class I')">I</button>
+  <button onclick="openForm('Class II')">II</button>
+  <button onclick="openForm('Class III')">III</button>
+  <button onclick="openForm('Class IV')">IV</button>
+  <button onclick="openForm('Class V')">V</button>
+  <div class="nav-buttons">
+    <button onclick="showDashboard()">📋 View Dashboard</button>
+    <button onclick="logout()">🔒 Logout</button>
+  </div>
+</div>
+
+<div class="card" id="studentForm" style="display:none;">
+  <h2 id="formTitle">Enter Student Details</h2>
+  <input type="text" id="name" placeholder="Student Name">
+  <input type="number" id="age" placeholder="Age">
+  <input type="text" id="father" placeholder="Father's Name">
+  <input type="text" id="mother" placeholder="Mother's Name">
+  <input type="text" id="aadhar" placeholder="Aadhar Number">
+  <textarea id="address" placeholder="Address" rows="3"></textarea>
+  <button onclick="submitForm()">Submit</button>
+  <div class="nav-buttons">
+    <button onclick="backToClass()">⬅ Back</button>
+  </div>
+</div>
+
+<div class="card" id="dashboardPage" style="display:none;">
+  <h2>📋 Student Dashboard</h2>
+  <label for="classFilter"><strong>Filter by Class:</strong></label>
+  <select id="classFilter" onchange="filterTable()">
+    <option value="all">All Classes</option>
+    <option value="Class I">Class I</option>
+    <option value="Class II">Class II</option>
+    <option value="Class III">Class III</option>
+    <option value="Class IV">Class IV</option>
+    <option value="Class V">Class V</option>
+  </select>
+  <table>
+    <thead>
+      <tr>
+        <th>Class</th>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Father's Name</th>
+        <th>Mother's Name</th>
+        <th>Aadhar</th>
+        <th>Address</th>
+      </tr>
+    </thead>
+    <tbody id="studentData"></tbody>
+  </table>
+  <div class="nav-buttons">
+    <button onclick="backToClass()">⬅ Back to Class</button>
+    <button onclick="clearData()">🗑 Clear All</button>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById("backgroundCanvas");
+  const ctx = canvas.getContext("2d");
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * 2 + 1;
+      this.speedX = (Math.random() - 0.5) * 0.5;
+      this.speedY = (Math.random() - 0.5) * 0.5;
+      this.alpha = Math.random() * 0.5 + 0.3;
+    }
+
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+        this.reset();
+      }
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function initParticles(num) {
+    particles = [];
+    for (let i = 0; i < num; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+    requestAnimationFrame(animate);
+  }
+
+  initParticles(100);
+  animate();
+
+  let currentClass = "";
+
+  function login() {
+    const user = document.getElementById("username").value.trim().toLowerCase();
+    const pass = document.getElementById("password").value;
+    if (user === "hindu" && pass === "h@123") {
+      document.getElementById("loginPage").style.display = "none";
+      document.getElementById("classPage").style.display = "block";
+    } else {
+      alert("Invalid credentials!");
+    }
+  }
+
+  function openForm(className) {
+    currentClass = className;
+    document.getElementById("formTitle").innerText = "Enter Details for " + className;
+    document.getElementById("classPage").style.display = "none";
+    document.getElementById("studentForm").style.display = "block";
+  }
+
+  function backToClass() {
+    document.getElementById("studentForm").style.display = "none";
+    document.getElementById("dashboardPage").style.display = "none";
+    document.getElementById("classPage").style.display = "block";
+  }
+
+  function submitForm() {
+    const name = document.getElementById("name").value.trim();
+    const age = document.getElementById("age").value.trim();
+    const father = document.getElementById("father").value.trim();
+    const mother = document.getElementById("mother").value.trim();
+    const aadhar = document.getElementById("aadhar").value.trim();
+    const address = document.getElementById("address").value.trim();
+
+    if (!name || !age || !father || !mother || !aadhar || !address) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    const student = {
+      class: currentClass,
+      name,
+      age,
+      father,
+      mother,
+      aadhar,
+      address
+    };
+
+    let students = JSON.parse(localStorage.getItem("students") || "[]");
+    students.push(student);
+    localStorage.setItem("students", JSON.stringify(students));
+
+    alert("Student data saved!");
+    clearForm();
+    showDashboard();
+  }
+
+  function clearForm() {
+    document.getElementById("name").value = "";
+    document.getElementById("age").value = "";
+    document.getElementById("father").value = "";
+    document.getElementById("mother").value = "";
+    document.getElementById("aadhar").value = "";
+    document.getElementById("address").value = "";
+  }
+
+  function showDashboard() {
+    document.getElementById("studentForm").style.display = "none";
+    document.getElementById("classPage").style.display = "none";
+    document.getElementById("dashboardPage").style.display = "block";
+    document.getElementById("classFilter").value = "all";
+    filterTable();
+  }
+
+  function filterTable() {
+    const selectedClass = document.getElementById("classFilter").value;
+    const tbody = document.getElementById("studentData");
+    tbody.innerHTML = "";
+
+    const students = JSON.parse(localStorage.getItem("students") || "[]");
+
+    const filtered = selectedClass === "all"
+      ? students
+      : students.filter(s => s.class === selectedClass);
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='7'>No data found for selected class.</td></tr>";
+    } else {
+      filtered.forEach(s => {
+        const row = `
+          <tr>
+            <td>${s.class}</td>
+            <td>${s.name}</td>
+            <td>${s.age}</td>
+            <td>${s.father}</td>
+            <td>${s.mother}</td>
+            <td>${s.aadhar}</td>
+            <td>${s.address}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+    }
+  }
+
+  function clearData() {
+    if (confirm("Are you sure you want to delete all data?")) {
+      localStorage.removeItem("students");
+      filterTable();
+    }
+  }
+
+  function logout() {
+    if (confirm("Do you want to logout?")) {
+      location.reload();
+    }
+  }
+</script>
+
+</body>
+</html>
